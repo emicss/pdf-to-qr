@@ -123,7 +123,7 @@ function App() {
               placeholder="Buscar por folio o nombre..."
               className="input-field"
             />
-            <button onClick={() => fileInputRef.current?.click()} className="btn btn-primary">
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="btn btn-primary">
               + Subir nuevo PDF
             </button>
           </div>
