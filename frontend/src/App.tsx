@@ -53,18 +53,25 @@ function App() {
         method: 'POST',
         body: formData,
       })
-      const data = await res.json()
+      const text = await res.text()
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = { error: `Error del servidor (HTTP ${res.status})` }
+      }
       if (res.ok) {
         setUploadStatus('success')
         fetchDocuments()
         resetUploadForm()
       } else {
         setUploadStatus('error')
-        alert(data.error || 'Error al subir')
+        alert(data.error || `Error al subir (HTTP ${res.status})`)
       }
     } catch (err) {
       setUploadStatus('error')
       console.error(err)
+      alert('Error de red al subir el archivo')
     }
   }
 

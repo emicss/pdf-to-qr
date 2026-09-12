@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Readable } from 'stream'
 import crypto from 'node:crypto'
 import busboy from 'busboy'
-import { supabase } from './_lib/supabase'
+import { supabase, ENV_ERROR } from './_lib/supabase'
 
 export const config = {
   api: {
@@ -12,6 +12,10 @@ export const config = {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (!supabase) {
+    return res.status(500).json({ error: ENV_ERROR })
+  }
+
   if (req.method === 'GET') {
     return handleList(res)
   }
@@ -24,6 +28,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function handleList(res: VercelResponse) {
+  if (!supabase) {
+    return res.status(500).json({ error: ENV_ERROR })
+  }
+
   try {
     const { data, error } = await supabase
       .from('documents')
@@ -39,6 +47,10 @@ async function handleList(res: VercelResponse) {
 }
 
 async function handleUpload(req: VercelRequest, res: VercelResponse) {
+  if (!supabase) {
+    return res.status(500).json({ error: ENV_ERROR })
+  }
+
   try {
     const buffer = await readBody(req)
     const { title, folio, filename, fileBuffer } = await parseMultipart(req.headers, buffer)
