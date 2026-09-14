@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 // Upload endpoint
-app.post('/api/documents/upload', upload.single('pdf'), async (req, res) => {
+app.post('/api/documents', upload.single('pdf'), async (req, res) => {
   try {
     const { title, folio: rawFolio } = req.body;
     const file = req.file;

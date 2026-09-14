@@ -20,6 +20,8 @@ function App() {
   const [documentTitle, setDocumentTitle] = useState('')
   const [documentFolio, setDocumentFolio] = useState('')
   const [search, setSearch] = useState('')
+  const [apiOk, setApiOk] = useState<boolean | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const qrCanvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -30,10 +32,27 @@ function App() {
   const fetchDocuments = async () => {
     try {
       const res = await fetch('/api/documents')
+      if (!res.ok) {
+        let msg = `Error del servidor (HTTP ${res.status})`
+        try {
+          const j = await res.json()
+          if (j?.error) msg = j.error
+        } catch {
+          /* body not JSON */
+        }
+        setApiOk(false)
+        setLoadError(msg)
+        setDocuments([])
+        return
+      }
       const data = await res.json()
       setDocuments(data)
+      setApiOk(true)
+      setLoadError(null)
     } catch (err) {
       console.error('Error fetching documents:', err)
+      setApiOk(false)
+      setLoadError('No se pudo conectar con la API')
     }
   }
 
@@ -49,7 +68,7 @@ function App() {
 
     setUploadStatus('uploading')
     try {
-      const res = await fetch('/api/documents/upload', {
+      const res = await fetch('/api/documents', {
         method: 'POST',
         body: formData,
       })
@@ -123,6 +142,31 @@ function App() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold">Sistema de Gestión de PDFs</h1>
           <div className="flex items-center gap-3">
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${
+                apiOk === null
+                  ? 'border-border text-muted-foreground'
+                  : apiOk
+                    ? 'border-green-500/40 bg-green-500/10 text-green-600 dark:text-green-400'
+                    : 'border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400'
+              }`}
+              title={loadError ?? undefined}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  apiOk === null
+                    ? 'bg-muted-foreground'
+                    : apiOk
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                }`}
+              />
+              {apiOk === null
+                ? 'Conectando…'
+                : apiOk
+                  ? `API OK · ${documents.length} doc${documents.length === 1 ? '' : 's'}`
+                  : 'API ERROR'}
+            </span>
             <input
               type="text"
               value={search}
@@ -136,6 +180,14 @@ function App() {
           </div>
         </div>
       </header>
+
+      {loadError && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+          <div className="p-4 bg-red-500/10 border border-red-500/40 rounded-lg text-sm text-red-600 dark:text-red-400">
+            {loadError}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {uploadStatus === 'uploading' && (
@@ -339,7 +391,7 @@ function App() {
       )}
 
       <footer className="border-t border-border p-4 text-center text-xs text-muted-foreground">
-        pdf-to-qr · v1.0.1
+        pdf-to-qr · v1.1.0
       </footer>
     </div>
   )
