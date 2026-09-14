@@ -337,6 +337,10 @@ function App() {
           </div>
         </div>
       )}
+
+      <footer className="border-t border-border p-4 text-center text-xs text-muted-foreground">
+        pdf-to-qr · v1.0.1
+      </footer>
     </div>
   )
 }
